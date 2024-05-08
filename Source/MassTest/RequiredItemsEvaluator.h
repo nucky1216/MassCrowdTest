@@ -75,7 +75,7 @@ struct MASSTEST_API FMoveToEntityTask :public FMassStateTreeTaskBase
 
 	virtual bool Link(FStateTreeLinker& Linker) override;
 	virtual const UStruct* GetInstanceDataType() const override { return FMoveToEntityTaskData::StaticStruct();  }
-	virtual EStateTreeRunStatus EnterState(FStateTreeExecutionContext& Context, const EStateTreeStateChangeType ChangeType, const FStateTreeTransitionResult& Transisition);
+	virtual EStateTreeRunStatus EnterState(FStateTreeExecutionContext& Context, const EStateTreeStateChangeType ChangeType, const FStateTreeTransitionResult& Transisition) const override;
 	virtual EStateTreeRunStatus Tick(FStateTreeExecutionContext& Context, const float DeltaTime) const override;
 
 	TStateTreeInstanceDataPropertyHandle<FMassEntityHandle> EntityHandle;
@@ -89,4 +89,59 @@ struct MASSTEST_API FMoveToEntityTask :public FMassStateTreeTaskBase
 	TStateTreeExternalDataHandle<FMassMovementParameters> MoveParameterHandle;
 	TStateTreeExternalDataHandle<UMassEntitySubsystem> EntitySubsystemHandle;
 	TStateTreeExternalDataHandle<UBuildingSubsystem> BuildingSubsystemHandle;
+};
+
+USTRUCT()
+	struct MASSTEST_API FClaimSmartObjectTaskData
+{
+	GENERATED_BODY()
+
+	UPROPERTY(VisibleAnywhere, Category = Input)
+		FSmartObjectHandle SOHandle;
+		
+	UPROPERTY(VisibleAnywhere, Category = Output)
+		EMassSmartObjectClaimResult ClaimResult = EMassSmartObjectClaimResult::Unset;
+};
+
+
+USTRUCT()
+struct MASSTEST_API FClaimSmartObjectTask :public FMassStateTreeTaskBase
+{
+	GENERATED_BODY()
+
+	virtual bool Link(FStateTreeLinker& Linker) override;
+	virtual const UStruct* GetInstanceDataType() const override { return FClaimSmartObjectTaskData::StaticStruct(); }
+	virtual EStateTreeRunStatus EnterState(FStateTreeExecutionContext& Context, const EStateTreeStateChangeType ChangeType, const FStateTreeTransitionResult& Transition) const override;
+
+
+	TStateTreeInstanceDataPropertyHandle<FSmartObjectHandle> SmartObjectHandle;
+	TStateTreeInstanceDataPropertyHandle<EMassSmartObjectClaimResult> ClaimResultHandle;
+
+	TStateTreeExternalDataHandle<FMassSmartObjectUserFragment> SmartObjectUserHandle;
+	TStateTreeExternalDataHandle<USmartObjectSubsystem> SmartObjectSubsystemHandle;
+};
+USTRUCT()
+struct MASSTEST_API FMoveTargetData
+{
+	GENERATED_BODY()
+};
+
+USTRUCT()
+struct MASSTEST_API FMoveTargetTask: public FMassStateTreeTaskBase
+{
+	GENERATED_BODY()
+
+	virtual bool Link(FStateTreeLinker& Linker) override;
+	virtual const UStruct* GetInstanceDataType() const override { return FMoveTargetData::StaticStruct(); }
+
+	virtual EStateTreeRunStatus EnterState(FStateTreeExecutionContext& Context, const EStateTreeStateChangeType ChangeType, const FStateTreeTransitionResult& Transition) const override;
+	virtual EStateTreeRunStatus Tick(FStateTreeExecutionContext& Context, const float DeltaTime) const override;
+
+protected:
+	TStateTreeExternalDataHandle<FMassMoveTargetFragment> MoveTargetHandle;
+	TStateTreeExternalDataHandle<FTransformFragment> TransformHandle;
+	TStateTreeExternalDataHandle<FMassSmartObjectUserFragment> SOUserHandle;
+	TStateTreeExternalDataHandle<UMassSignalSubsystem> MassSignalSubsystemHandle;
+	TStateTreeExternalDataHandle<FMassMovementParameters> MoveParamtersHandle;
+
 };

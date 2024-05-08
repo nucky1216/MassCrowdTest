@@ -122,7 +122,7 @@ bool FRequiredItemsEvaluator::Link(FStateTreeLinker& Linker)
 
 bool FMoveToEntityTask::Link(FStateTreeLinker& Linker)
 {
-	Linker.LinkInstanceDataProperty(EntityHandle, STATETREE_INSTANCEDATA_PROPERTY(FMoveToENtityTaskData, ItemHandle));
+	Linker.LinkInstanceDataProperty(EntityHandle, STATETREE_INSTANCEDATA_PROPERTY(FMoveToEntityTaskData, ItemHandle));
 
 	Linker.LinkExternalData(MoveTargetHandle);
 	Linker.LinkExternalData(TransformHandle);
@@ -160,5 +160,112 @@ EStateTreeRunStatus FMoveToEntityTask::Tick(FStateTreeExecutionContext& Context,
 	const FMassEntityHandle& ItemHandle = Context.GetInstanceData(EntityHandle);
 	UMassEntitySubsystem& EntitySubsystem = Context.GetExternalData(EntitySubsystemHandle);
 	//39:13
-	return EStateTreeRunStatus();
+	const FMassStateTreeExecutionContext& MassContext = static_cast<FMassStateTreeExecutionContext&>(Context);
+	UMassSignalSubsystem& MassSignalSubsystem = Context.GetExternalData(MassSignalSubsystemHandle);
+	UBuildingSubsystem& BuildingSubsystem = Context.GetExternalData(BuildingSubsystemHandle);
+	MassSignalSubsystem.DelaySignalEntity(UE::Mass::Signals::FollowPointPathDone, MassContext.GetEntity(),1);
+
+	FMassMoveTargetFragment& MoveTarget = Context.GetExternalData(MoveTargetHandle);
+	const FTransform& Transform = Context.GetExternalData(TransformHandle).GetTransform();
+
+	MoveTarget.DistanceToGoal = (MoveTarget.Center - Transform.GetLocation()).Length();
+	MoveTarget.Forward = (MoveTarget.Center - Transform.GetLocation()).GetSafeNormal();
+
+	if (MoveTarget.DistanceToGoal <= MoveTarget.SlackRadius + 100.f)
+	{
+		EntitySubsystem.Defer().DestroyEntity(ItemHandle);
+		BuildingSubsystem.ItemHashGrid.RemovePoint(ItemHandle, MoveTarget.Center);
+		return EStateTreeRunStatus::Succeeded;
+
+	}
+
+	return EStateTreeRunStatus::Running;
+}
+
+bool FClaimSmartObjectTask::Link(FStateTreeLinker& Linker)
+{
+	Linker.LinkInstanceDataProperty(SmartObjectHandle, STATETREE_INSTANCEDATA_PROPERTY(FClaimSmartObjectTaskData, SOHandle));
+	Linker.LinkInstanceDataProperty(ClaimResultHandle, STATETREE_INSTANCEDATA_PROPERTY(FClaimSmartObjectTaskData, ClaimResult));
+
+	Linker.LinkExternalData(SmartObjectUserHandle);
+	Linker.LinkExternalData(SmartObjectSubsystemHandle);
+	return true;
+}
+
+EStateTreeRunStatus FClaimSmartObjectTask::EnterState(FStateTreeExecutionContext& Context, const EStateTreeStateChangeType ChangeType, const FStateTreeTransitionResult& Transition)
+{
+	const FSmartObjectHandle& SOHandle = Context.GetInstanceData(SmartObjectHandle);
+	EMassSmartObjectClaimResult& ClaimResult = Context.GetInstanceData(ClaimResultHandle);
+
+	FSmartObjectRequestFilter Filter;
+	Filter.BehaviorDefinitionClass = USmartObjectBehaviorDefinition::StaticClass();
+
+	USmartObjectSubsystem& SmartObjectSubsystem = Context.GetExternalData(SmartObjectSubsystemHandle);
+	FMassSmartObjectUserFragment& SOUser = Context.GetExternalData(SmartObjectUserHandle);
+
+	FSmartObjectClaimHandle ClaimHandle = SmartObjectSubsystem.Claim(SOHandle, Filter);
+
+	if (!ClaimHandle.IsValid())
+		return EStateTreeRunStatus::Failed;
+
+	SOUser.ClaimHandle = ClaimHandle;
+	SOUser.InteractionStatus = EMassSmartObjectInteractionStatus::Unset;
+	const FTransform Transform = SmartObjectSubsystem.GetSlotTransform(SOUser.ClaimHandle).Get(FTransform::Identity);
+	SOUser.TargetLocation = Transform.GetLocation();
+	SOUser.TargetDirection = Transform.GetRotation().Vector();
+	
+	ClaimResult = EMassSmartObjectClaimResult::Succeeded;
+
+
+
+	return EStateTreeRunStatus::Succeeded;
+}
+
+bool FMoveTargetTask::Link(FStateTreeLinker& Linker)
+{
+	Linker.LinkExternalData(MoveTargetHandle);
+	Linker.LinkExternalData(TransformHandle);
+	Linker.LinkExternalData(SOUserHandle);
+	Linker.LinkExternalData(MassSignalSubsystemHandle);
+	Linker.LinkExternalData(MoveParametersHandle);
+
+	return true;
+}
+
+EStateTreeRunStatus FMoveTargetTask::EnterState(FStateTreeExecutionContext& Context, const EStateTreeStateChangeType ChangeType, const FStateTreeTransitionResult& Transition) const
+{
+	FMassMoveTargetFragment& MoveTarget = Context.GetExternalData(MoveTargetHandle);
+	const FMassSmartObjectUserFragment& SOUserFragment = Context.GetExternalData(SOUserHandle);
+	const FMassMovementParameters& MoveParameters = Context.GetExternalData(MoveParamtersHandle);
+
+	if (!SOUserFragment.ClaimHandle.IsValid())
+		return EStateTreeRunStatus::Failed;
+
+	MoveTarget.Center = SOUserFragment.TargetLocation;
+	MoveTarget.Forward = SOUserFragment.TargetDirection;
+	MoveTarget.SlackRadius = 25.f;
+	MoveTarget.DesiredSpeed.Set(MoveParameters.DefaultDesiredSpeed);
+	MoveTarget.CreateNewAction(EMassMovementAction::Move, *Context.GetWorld());
+	MoveTarget.IntentAtGoal = EMassMovementAction::Stand;
+
+	return EStateTreeRunStatus::Running;
+}
+
+EStateTreeRunStatus FMoveTargetTask::Tick(FStateTreeExecutionContext& Context, const float DeltaTime) const
+{
+	const FMassStateTreeExecutionContext& MassContext = static_cast<FMassStateTreeExecutionContext&>(Context);
+	UMassSignalSubsystem& MassSignalSubsystem = Context.GetExternalData(MassSignalSubsystemHandle);
+	MassSignalSubsystem.DelaySignalEntity(UE::Mass::Signals::FollowPointPathDone, MassContext.GetEntity(), 1);
+
+	FMassMoveTargetFragment& MoveTarget = Context.GetExternalData(MoveTargetHandle);
+	const FTransform& Transform = Context.GetExternalData(TransformHandle).GetTransform();
+
+	MoveTarget.DistanceToGoal = (MoveTarget.Center = Transform.GetLocation()).Length();
+	MoveTarget.Forward = (MoveTarget.Center - Transform.GetLocation()).GetSafeNormal();
+
+	if (MoveTarget.DistanceToGoal < +MoveTarget.SlackRadius + 100.f)
+	{
+		return EStateTreeRunStatus::Succeeded;
+	}
+	return EStateTreeRunStatus::Succeeded;
 }
