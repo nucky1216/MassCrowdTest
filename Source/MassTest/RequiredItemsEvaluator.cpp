@@ -52,7 +52,7 @@ void FRequiredItemsEvaluator::Evaluate(FStateTreeExecutionContext& Context, cons
 			}
 		}
 	}
-
+	//Agent是否在等待命令
 	if (Agent.QueuedItems.Num() <= 0 && !Agent.BuildingHandle.IsValid())
 	{
 		if (BuildingSubsystem.GetQueuedBuidlings() > 0)
@@ -60,7 +60,7 @@ void FRequiredItemsEvaluator::Evaluate(FStateTreeExecutionContext& Context, cons
 			FMassEntityHandle TreeHandle;
 			FMassEntityHandle RockHandle;
 
-			if (BuildingSubsystem.FindItem(Location, 5000.f, Rock, RockHandle));
+			if (BuildingSubsystem.FindItem(Location, 5000.f, Rock, RockHandle))
 			{
 				if (BuildingSubsystem.FindItem(Location, 5000.f, Tree, TreeHandle))
 				{
@@ -90,6 +90,7 @@ void FRequiredItemsEvaluator::Evaluate(FStateTreeExecutionContext& Context, cons
 		return;
 	}
 
+	//检查排队的资源
 	TArray<FSmartObjectHandle> QueuedResources;
 	BuildingSubsystem.GetQueuedResources(QueuedResources);
 	if (QueuedResources.Num() > 0 && !Agent.ResouceHandle.IsValid())
@@ -117,4 +118,47 @@ bool FRequiredItemsEvaluator::Link(FStateTreeLinker& Linker)
 	Linker.LinkInstanceDataProperty(ItemHandle, STATETREE_INSTANCEDATA_PROPERTY(FequiredItemsEvaluatorData, ItemHandle));
 
 	return true;
+}
+
+bool FMoveToEntityTask::Link(FStateTreeLinker& Linker)
+{
+	Linker.LinkInstanceDataProperty(EntityHandle, STATETREE_INSTANCEDATA_PROPERTY(FMoveToENtityTaskData, ItemHandle));
+
+	Linker.LinkExternalData(MoveTargetHandle);
+	Linker.LinkExternalData(TransformHandle);
+	Linker.LinkExternalData(SOUserHandle);
+	Linker.LinkExternalData(MassSignalSubsystemHandle);
+	Linker.LinkExternalData(MoveParameterHandle);
+	Linker.LinkExternalData(EntitySubsystemHandle);
+	Linker.LinkExternalData(BuildingSubsystemHandle);
+	return true;
+}
+
+EStateTreeRunStatus FMoveToEntityTask::EnterState(FStateTreeExecutionContext& Context, const EStateTreeStateChangeType ChangeType, const FStateTreeTransitionResult& Transisition)
+{
+	FMassMoveTargetFragment& MoveTarget = Context.GetExternalData(MoveTargetHandle);
+	const FMassMovementParameters& MoveParameters = Context.GetExternalData(MoveParameterHandle);
+	const FMassEntityHandle& ItemHandle = Context.GetInstanceData(EntityHandle);
+	UMassEntitySubsystem& EntitySubsystem = Context.GetExternalData(EntitySubsystemHandle);
+
+	if (!EntitySubsystem.IsEntityValid(ItemHandle))
+		return EStateTreeRunStatus::Failed;
+
+	const FVector& Location = EntitySubsystem.GetFragmentDataChecked<FTransformFragment>(ItemHandle).GetTransform().GetLocation();
+
+	MoveTarget.Center = Location;
+	MoveTarget.SlackRadius = 25.f;
+	MoveTarget.DesiredSpeed.Set(MoveParameters.DefaultDesiredSpeed);
+	MoveTarget.CreateNewAction(EMassMovementAction::Move, *Context.GetWorld());
+	MoveTarget.IntentAtGoal = EMassMovementAction::Stand;
+
+	return EStateTreeRunStatus::Running;
+}
+
+EStateTreeRunStatus FMoveToEntityTask::Tick(FStateTreeExecutionContext& Context, const float DeltaTime) const
+{
+	const FMassEntityHandle& ItemHandle = Context.GetInstanceData(EntityHandle);
+	UMassEntitySubsystem& EntitySubsystem = Context.GetExternalData(EntitySubsystemHandle);
+	//39:13
+	return EStateTreeRunStatus();
 }

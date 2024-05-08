@@ -53,9 +53,40 @@ struct MASSTEST_API FRequiredItemsEvaluator :public FMassStateTreeEvaluatorBase
 	TStateTreeExternalDataHandle<FTransformFragment> TransformHandle;
 	TStateTreeExternalDataHandle<UBuildingSubsystem> BuildingSubsystemHandle;
 
-	TStateTreeExternalDataHandle<bool> FoundSmartObjectHandle;
-	TStateTreeExternalDataHandle<FSmartObjectRequestFilter> FilterHandle;
-	TStateTreeExternalDataHandle<bool> FoundItemHandle;
-	TStateTreeExternalDataHandle<FSmartObjectHandle> SmartObjectHandle;
-	TStateTreeExternalDataHandle<FMassEntityHandle> ItemHandle;
+	TStateTreeInstanceDataPropertyHandle<bool> FoundSmartObjectHandle;
+	TStateTreeInstanceDataPropertyHandle<FSmartObjectRequestFilter> FilterHandle;
+	TStateTreeInstanceDataPropertyHandle<bool> FoundItemHandle;
+	TStateTreeInstanceDataPropertyHandle<FSmartObjectHandle> SmartObjectHandle;
+	TStateTreeInstanceDataPropertyHandle<FMassEntityHandle> ItemHandle;
+};
+
+USTRUCT()
+struct FMoveToEntityTaskData
+{
+	GENERATED_BODY()
+
+		UPROPERTY(VisibleAnywhere, Category = Input)
+		FMassEntityHandle ItemHandle;
+};
+USTRUCT()
+struct MASSTEST_API FMoveToEntityTask :public FMassStateTreeTaskBase
+{
+	GENERATED_BODY()
+
+	virtual bool Link(FStateTreeLinker& Linker) override;
+	virtual const UStruct* GetInstanceDataType() const override { return FMoveToEntityTaskData::StaticStruct();  }
+	virtual EStateTreeRunStatus EnterState(FStateTreeExecutionContext& Context, const EStateTreeStateChangeType ChangeType, const FStateTreeTransitionResult& Transisition);
+	virtual EStateTreeRunStatus Tick(FStateTreeExecutionContext& Context, const float DeltaTime) const override;
+
+	TStateTreeInstanceDataPropertyHandle<FMassEntityHandle> EntityHandle;
+	TStateTreeInstanceDataPropertyHandle<EMassSmartObjectClaimResult> ClaimResultHandle;
+
+	TStateTreeExternalDataHandle<USmartObjectSubsystem> SmartObjectSubsystemHandle;
+	TStateTreeExternalDataHandle<FMassMoveTargetFragment> MoveTargetHandle;
+	TStateTreeExternalDataHandle<FTransformFragment> TransformHandle;
+	TStateTreeExternalDataHandle<FMassSmartObjectUserFragment> SOUserHandle;
+	TStateTreeExternalDataHandle<UMassSignalSubsystem> MassSignalSubsystemHandle;
+	TStateTreeExternalDataHandle<FMassMovementParameters> MoveParameterHandle;
+	TStateTreeExternalDataHandle<UMassEntitySubsystem> EntitySubsystemHandle;
+	TStateTreeExternalDataHandle<UBuildingSubsystem> BuildingSubsystemHandle;
 };
