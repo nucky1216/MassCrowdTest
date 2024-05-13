@@ -28,6 +28,6 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 		USmartObjectComponent* SmartObjectComp;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int Floors = 1;
 };

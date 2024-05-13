@@ -134,7 +134,7 @@ bool FMoveToEntityTask::Link(FStateTreeLinker& Linker)
 	return true;
 }
 
-EStateTreeRunStatus FMoveToEntityTask::EnterState(FStateTreeExecutionContext& Context, const EStateTreeStateChangeType ChangeType, const FStateTreeTransitionResult& Transisition)
+EStateTreeRunStatus FMoveToEntityTask::EnterState(FStateTreeExecutionContext& Context, const EStateTreeStateChangeType ChangeType, const FStateTreeTransitionResult& Transisition) const
 {
 	FMassMoveTargetFragment& MoveTarget = Context.GetExternalData(MoveTargetHandle);
 	const FMassMovementParameters& MoveParameters = Context.GetExternalData(MoveParameterHandle);
@@ -154,6 +154,7 @@ EStateTreeRunStatus FMoveToEntityTask::EnterState(FStateTreeExecutionContext& Co
 
 	return EStateTreeRunStatus::Running;
 }
+
 
 EStateTreeRunStatus FMoveToEntityTask::Tick(FStateTreeExecutionContext& Context, const float DeltaTime) const
 {
@@ -192,7 +193,7 @@ bool FClaimSmartObjectTask::Link(FStateTreeLinker& Linker)
 	return true;
 }
 
-EStateTreeRunStatus FClaimSmartObjectTask::EnterState(FStateTreeExecutionContext& Context, const EStateTreeStateChangeType ChangeType, const FStateTreeTransitionResult& Transition)
+EStateTreeRunStatus FClaimSmartObjectTask::EnterState(FStateTreeExecutionContext& Context, const EStateTreeStateChangeType ChangeType, const FStateTreeTransitionResult& Transition) const
 {
 	const FSmartObjectHandle& SOHandle = Context.GetInstanceData(SmartObjectHandle);
 	EMassSmartObjectClaimResult& ClaimResult = Context.GetInstanceData(ClaimResultHandle);
@@ -227,7 +228,7 @@ bool FMoveTargetTask::Link(FStateTreeLinker& Linker)
 	Linker.LinkExternalData(TransformHandle);
 	Linker.LinkExternalData(SOUserHandle);
 	Linker.LinkExternalData(MassSignalSubsystemHandle);
-	Linker.LinkExternalData(MoveParametersHandle);
+	Linker.LinkExternalData(MoveParamtersHandle);
 
 	return true;
 }
