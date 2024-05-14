@@ -25,6 +25,7 @@ struct MASSTEST_API FequiredItemsEvaluatorData
 
 	UPROPERTY(EditAnywhere, Category = Output)
 			FSmartObjectRequestFilter Filter;
+
 	UPROPERTY(EditAnywhere, Category = Output)
 		FSmartObjectHandle SmartObjectHandle;
 

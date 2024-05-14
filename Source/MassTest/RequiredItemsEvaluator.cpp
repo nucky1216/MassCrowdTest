@@ -16,6 +16,7 @@ void FRequiredItemsEvaluator::Evaluate(FStateTreeExecutionContext& Context, cons
 {
 	if (EvalType == EStateTreeEvaluationType::Tick)
 		return ;
+
 	FAgentFragment& Agent = Context.GetExternalData(AgentHandle);
 	UMassEntitySubsystem& EntitySubsystem = Context.GetExternalData(EntitySubsystemHandle);
 	UBuildingSubsystem& BuildingSubsystem = Context.GetExternalData(BuildingSubsystemHandle);
@@ -50,6 +51,7 @@ void FRequiredItemsEvaluator::Evaluate(FStateTreeExecutionContext& Context, cons
 			{
 				ItemFragment->bClaimed = true;
 			}
+			return;
 		}
 	}
 	//AgentÊÇ·ñÔÚµÈ´ıÃüÁî
@@ -264,7 +266,7 @@ EStateTreeRunStatus FMoveTargetTask::Tick(FStateTreeExecutionContext& Context, c
 	MoveTarget.DistanceToGoal = (MoveTarget.Center = Transform.GetLocation()).Length();
 	MoveTarget.Forward = (MoveTarget.Center - Transform.GetLocation()).GetSafeNormal();
 
-	if (MoveTarget.DistanceToGoal < +MoveTarget.SlackRadius + 100.f)
+	if (MoveTarget.DistanceToGoal <= MoveTarget.SlackRadius + 100.f)
 	{
 		return EStateTreeRunStatus::Succeeded;
 	}

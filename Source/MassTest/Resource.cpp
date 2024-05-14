@@ -33,7 +33,11 @@ void AResource::AddToResourceQueue()
 {
 	if (const USmartObjectComponent* SOComp = FindComponentByClass<USmartObjectComponent>())
 	{
+		UE_LOG(LogTemp, Log, TEXT("Try get SmartObject:%s"), * SOComp->GetName());
 		FSmartObjectHandle SOHandle = SOComp->GetRegisteredHandle();
+
+		UE_LOG(LogTemp, Log, TEXT("SmartObject Registerd:%d"), SOComp->IsRegistered());
+
 		GetWorld()->GetSubsystem<UBuildingSubsystem>()->AddResourceQueue(SOHandle);
 	}
 }

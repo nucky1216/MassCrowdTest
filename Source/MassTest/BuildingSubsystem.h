@@ -9,6 +9,7 @@
 #include "Spatial/PointHashGrid3.h"
 #include "BuildingSubsystem.generated.h"
 
+//在邻近的点中找到距离最近的点
 typedef UE::Geometry::TPointHashGrid3<FMassEntityHandle, Chaos::FReal> ItemHashGrid3D;
 
 
@@ -65,7 +66,7 @@ public:
 	bool ClaimResources(FSmartObjectHandle& OutResourceHandle);
 
 	UPROPERTY()
-		FMassEntityHandle Agent;
+	FMassEntityHandle Agent;
 	TArray<FBuild> QueuedBuildings;
 	TArray<FMassEntityHandle> Agents;
 	TArray<FSmartObjectHandle> QueuedResources;

@@ -29,6 +29,7 @@ void UGatherBD::Deactivate(FMassCommandBuffer& CommandBuffer, const FMassBehavio
 	{
 		TArray<FMassEntityHandle> Items;
 		const FMassEntityTemplate* EntityTemplate = ItemConfig->GetConfig().GetOrCreateEntityTemplate(*UGameplayStatics::GetPlayerPawn(EntityContext.SmartObjectSubsystem.GetWorld(), 0), *ItemConfig);
+		SpawnerSubsystem->SpawnEntities(*EntityTemplate, 4, Items);
 
 		for (const FMassEntityHandle& ItemHandle : Items)
 		{
@@ -44,8 +45,10 @@ void UGatherBD::Deactivate(FMassCommandBuffer& CommandBuffer, const FMassBehavio
 		{
 			CommandBuffer.PushCommand(FDeferredCommand([SOComp, EntityContext](UMassEntitySubsystem& System)
 				{
+					UE_LOG(LogTemp, Log, TEXT("DeActivated1 SmartObject Registerd:%d"),SOComp->IsRegistered());
 					EntityContext.SmartObjectSubsystem.UnregisterSmartObject(*SOComp);
 					SOComp->GetOwner()->Destroy();
+					UE_LOG(LogTemp, Log, TEXT("DeActivated2 SmartObject Registerd:%d"), SOComp->IsRegistered());
 				}));
 		}
 

@@ -19,7 +19,7 @@ enum EResourceType
 	Rock
 };
 
-USTRUCT(BlueprintType)
+USTRUCT(BlueprintType)//实体存储的数据
 struct MASSTEST_API FAgentFragment :public FMassFragment
 {
 	GENERATED_BODY()
@@ -27,11 +27,11 @@ struct MASSTEST_API FAgentFragment :public FMassFragment
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "MassTest")
 		TMap<TEnumAsByte<EResourceType>, int> Inventory;// 库存<类型，数量>;
 
-	UPROPERTY()
+	UPROPERTY()//建造句柄
 		FSmartObjectHandle BuildingHandle;
-	UPROPERTY()
+	UPROPERTY()//资源句柄
 		FSmartObjectHandle ResouceHandle;
-	UPROPERTY()
+	UPROPERTY()//物品
 		TArray<FMassEntityHandle> QueuedItems;
 };
 

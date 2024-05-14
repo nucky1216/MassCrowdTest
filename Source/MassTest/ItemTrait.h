@@ -80,8 +80,6 @@ public:
 
 	UPROPERTY()
 		UBuildingSubsystem* BuildingSubsystem;
-	UPROPERTY()
-		UMassRepresentationSubsystem* RepresentaionSubsystem;
 
 	UPROPERTY()
 		TObjectPtr<UMassRepresentationSubsystem> RepresentationSubsystem;

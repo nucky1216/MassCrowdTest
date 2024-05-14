@@ -30,8 +30,8 @@ void UConstruction::Execute(UMassEntitySubsystem& EntitySubsystem, FMassExecutio
 					const AActor* Actor = SmartObjectComponent->GetOwner();
 					UInstancedStaticMeshComponent* InstancedStaticMeshComp = Actor->FindComponentByClass<UInstancedStaticMeshComponent>();
 					FTransform Transform;
-
 					Transform.SetLocation(FVector(0, 0, IncrementHeight * InstancedStaticMeshComp->GetInstanceCount()));
+					InstancedStaticMeshComp->AddInstance(Transform);
 
 					Agent.BuildingHandle = FSmartObjectHandle::Invalid;
 					Context.Defer().RemoveTag<FConstructionFloor>(Context.GetEntity(EntityIndex));

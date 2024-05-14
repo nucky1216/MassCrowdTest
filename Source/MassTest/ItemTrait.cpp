@@ -38,6 +38,7 @@ void UItemInitializerProcessor::Execute(UMassEntitySubsystem& EntitySubsystem, F
 				}
 
 				BuildingSubsystem->ItemHashGrid.InsertPoint(Context.GetEntity(EntityIndex), Item.OldLocation);
+
 				Context.Defer().AddTag<FItemAddedToGrid>(Context.GetEntity(EntityIndex));
 			}
 
