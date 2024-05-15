@@ -34,6 +34,9 @@ void UGatherBD::Deactivate(FMassCommandBuffer& CommandBuffer, const FMassBehavio
 		for (const FMassEntityHandle& ItemHandle : Items)
 		{
 			const FVector& SpawnLocation = EntityContext.EntityView.GetFragmentDataPtr<FTransformFragment>()->GetTransform().GetLocation();
+			
+
+			UE_LOG(LogTemp, Log, TEXT("Get SpawnLocation from Context.FragmentDataPtr:(%s)"), *SpawnLocation.ToString());
 
 			FItemFragment ItemFragment;
 			ItemFragment.ItemType = ResourceType;
