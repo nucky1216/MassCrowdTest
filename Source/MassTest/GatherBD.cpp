@@ -13,16 +13,18 @@ void UGatherBD::Activate(FMassCommandBuffer& CommandBuffer, const FMassBehaviorE
 {
 	Super::Activate(CommandBuffer, EntityContext);
 
+	UE_LOG(LogTemp, Log, TEXT("[GatherBD] Activate!"));
 	FAgentFragment& Agent = EntityContext.EntityView.GetFragmentData<FAgentFragment>();
 
 	Agent.ResouceHandle.Reset();
+
 
 }
 
 void UGatherBD::Deactivate(FMassCommandBuffer& CommandBuffer, const FMassBehaviorEntityContext& EntityContext) const
 {
-	Super::Deactivate(CommandBuffer,EntityContext);
-
+	Super::Deactivate(CommandBuffer, EntityContext);
+	UE_LOG(LogTemp, Log, TEXT("[GatherBD] Deactivate!"));
 	UMassSpawnerSubsystem* SpawnerSubsystem = UWorld::GetSubsystem<UMassSpawnerSubsystem>(EntityContext.SmartObjectSubsystem.GetWorld());
 
 	if (EntityContext.SmartObjectSubsystem.GetWorld() && UGameplayStatics::GetPlayerPawn(EntityContext.SmartObjectSubsystem.GetWorld(), 0))
@@ -56,4 +58,5 @@ void UGatherBD::Deactivate(FMassCommandBuffer& CommandBuffer, const FMassBehavio
 		}
 
 	}	
+	
 }

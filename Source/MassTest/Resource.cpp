@@ -37,7 +37,6 @@ void AResource::AddToResourceQueue()
 		FSmartObjectHandle SOHandle = SOComp->GetRegisteredHandle();
 
 		UE_LOG(LogTemp, Log, TEXT("SmartObject Registerd:%d"), SOComp->IsRegistered());
-
 		GetWorld()->GetSubsystem<UBuildingSubsystem>()->AddResourceQueue(SOHandle);
 	}
 }

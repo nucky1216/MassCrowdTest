@@ -16,10 +16,12 @@ void FRequiredItemsEvaluator::Evaluate(FStateTreeExecutionContext& Context, cons
 {
 	if (EvalType == EStateTreeEvaluationType::Tick)
 		return ;
+	//UE_LOG(LogTemp, Log, TEXT("[RequireEvaluator] Evaluating.."));
 
 	FAgentFragment& Agent = Context.GetExternalData(AgentHandle);
 	UMassEntitySubsystem& EntitySubsystem = Context.GetExternalData(EntitySubsystemHandle);
 	UBuildingSubsystem& BuildingSubsystem = Context.GetExternalData(BuildingSubsystemHandle);
+	//AgentEntity Location
 	const FVector& Location = Context.GetExternalData(TransformHandle).GetTransform().GetLocation();
 
 	FSmartObjectRequestFilter& Filter = Context.GetInstanceData(FilterHandle);
@@ -61,11 +63,14 @@ void FRequiredItemsEvaluator::Evaluate(FStateTreeExecutionContext& Context, cons
 		{
 			FMassEntityHandle TreeHandle;
 			FMassEntityHandle RockHandle;
-
-			if (BuildingSubsystem.FindItem(Location, 5000.f, Rock, RockHandle))
+			UE_LOG(LogTemp, Log, TEXT("[RequireEvaluator] Detect Location:%s"),*Location.ToString());
+			if (BuildingSubsystem.FindItem(Location, 8000.f, Rock, RockHandle))
 			{
-				if (BuildingSubsystem.FindItem(Location, 5000.f, Tree, TreeHandle))
+				UE_LOG(LogTemp, Log, TEXT("[RequireEvaluator] Found Rock!"));
+				if (BuildingSubsystem.FindItem(Location, 8000.f, Tree, TreeHandle))
 				{
+					UE_LOG(LogTemp, Log, TEXT("[RequireEvaluator] Found Tree"));
+					
 					bFoundItemHandle = true;
 					BuildingSubsystem.CalimFloor(Agent.BuildingHandle);
 
@@ -84,7 +89,7 @@ void FRequiredItemsEvaluator::Evaluate(FStateTreeExecutionContext& Context, cons
 			}
 		}
 	}
-
+	//UE_LOG(LogTemp, Log, TEXT("[RequireEvaluator] Agent.QueuedItems.Num:%d"), Agent.QueuedItems.Num());
 	if (Agent.BuildingHandle.IsValid() && Agent.QueuedItems.Num() == 0)
 	{
 		bFoundSmartObject = true;
@@ -95,8 +100,11 @@ void FRequiredItemsEvaluator::Evaluate(FStateTreeExecutionContext& Context, cons
 	//检查排队的资源
 	TArray<FSmartObjectHandle> QueuedResources;
 	BuildingSubsystem.GetQueuedResources(QueuedResources);
+
 	if (QueuedResources.Num() > 0 && !Agent.ResouceHandle.IsValid())
 	{
+		UE_LOG(LogTemp, Log, TEXT("[RequireEvaluator] QueuedResource Num:%d"), QueuedResources.Num());
+
 		FSmartObjectHandle ResourceHandle;
 		bFoundSmartObject = true;
 		BuildingSubsystem.ClaimResources(ResourceHandle);
@@ -160,6 +168,7 @@ EStateTreeRunStatus FMoveToEntityTask::EnterState(FStateTreeExecutionContext& Co
 
 EStateTreeRunStatus FMoveToEntityTask::Tick(FStateTreeExecutionContext& Context, const float DeltaTime) const
 {
+	UE_LOG(LogTemp, Log, TEXT("[RequiredEvaluator] ******MoveEntityTask*******"));
 	const FMassEntityHandle& ItemHandle = Context.GetInstanceData(EntityHandle);
 	UMassEntitySubsystem& EntitySubsystem = Context.GetExternalData(EntitySubsystemHandle);
 	//39:13
@@ -270,5 +279,5 @@ EStateTreeRunStatus FMoveTargetTask::Tick(FStateTreeExecutionContext& Context, c
 	{
 		return EStateTreeRunStatus::Succeeded;
 	}
-	return EStateTreeRunStatus::Succeeded;
+	return EStateTreeRunStatus::Running;
 }

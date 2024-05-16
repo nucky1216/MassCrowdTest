@@ -6,9 +6,12 @@
 
 void UBuildingSubsystem::AddResourceQueue(FSmartObjectHandle& SOHandle)
 {
+
+	UE_LOG(LogTemp, Log, TEXT("[BuildingSubsystem] QueuedResource Num:%d"), QueuedResources.Num());
 	if (QueuedResources.Find(SOHandle) == INDEX_NONE)
 	{
 		QueuedResources.Emplace(SOHandle);
+		
 	}
 }
 
@@ -40,11 +43,14 @@ bool UBuildingSubsystem::CalimFloor(FSmartObjectHandle& OutBuilding)
 bool UBuildingSubsystem::FindItem(const FVector& Location, float Radius, EResourceType ResourceType, FMassEntityHandle& OutItemHandle) const
 {
 	UMassEntitySubsystem* EntitySubsystem = GetWorld()->GetSubsystem<UMassEntitySubsystem>();
+	UE_LOG(LogTemp, Log, TEXT("[BuildingSubsystem] HashGrid Searching Resource:%d"), ResourceType);
 	const TPair<FMassEntityHandle, float> ItemHandle = ItemHashGrid.FindNearestInRadius(Location, Radius, [this, &Location, &EntitySubsystem](const FMassEntityHandle& Handle)
-		{
+		{	
+			
 			if (!EntitySubsystem->IsEntityValid(Handle))
 				return 9999.0;
 			FVector& OtherLocation = EntitySubsystem->GetFragmentDataPtr<FItemFragment>(Handle)->OldLocation;
+		
 			return FVector::Distance(OtherLocation, Location);
 		}, [this, &ResourceType, &EntitySubsystem](const FMassEntityHandle& Handle)
 		{
