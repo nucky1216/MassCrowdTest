@@ -3,6 +3,7 @@
 
 #include "Resource.h"
 #include "BuildingSubsystem.h"
+#include "SmartObjectSubsystem.h"
 #include "SmartObjectComponent.h"
 // Sets default values
 AResource::AResource()

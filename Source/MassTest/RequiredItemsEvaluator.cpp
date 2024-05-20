@@ -33,6 +33,7 @@ void FRequiredItemsEvaluator::Evaluate(FStateTreeExecutionContext& Context, cons
 	bFoundSmartObject = false;
 	bFoundItemHandle = false;
 
+	
 	Filter.BehaviorDefinitionClass = USmartObjectBehaviorDefinition::StaticClass();
 
 	FSmartObjectRequest Request;
@@ -41,12 +42,14 @@ void FRequiredItemsEvaluator::Evaluate(FStateTreeExecutionContext& Context, cons
 	FGameplayTagQueryExpression Query;
 	Query.AllTagsMatch();
 
-
+	
+	//UE_LOG(LogTemp, Log, TEXT("[RequireEvaluator] SOHandle Valid :%d"), SOHandle.IsValid());
 	if (!EntitySubsystem.IsEntityValid(EntityHandle) && Agent.QueuedItems.Num() > 0)
 	{
 		EntityHandle = Agent.QueuedItems.Pop();
 		if (EntitySubsystem.IsEntityValid(EntityHandle))
 		{
+			UE_LOG(LogTemp, Log, TEXT("[RequireEvaluator] Next ItemFound"));
 			bFoundItemHandle = true;
 			FItemFragment* ItemFragment = EntitySubsystem.GetFragmentDataPtr<FItemFragment>(EntityHandle);
 			if (ItemFragment)
@@ -63,11 +66,11 @@ void FRequiredItemsEvaluator::Evaluate(FStateTreeExecutionContext& Context, cons
 		{
 			FMassEntityHandle TreeHandle;
 			FMassEntityHandle RockHandle;
-			UE_LOG(LogTemp, Log, TEXT("[RequireEvaluator] Detect Location:%s"),*Location.ToString());
-			if (BuildingSubsystem.FindItem(Location, 8000.f, Rock, RockHandle))
+			//UE_LOG(LogTemp, Log, TEXT("[RequireEvaluator] Detect Location:%s"),*Location.ToString());
+			if (BuildingSubsystem.FindItem(Location, 3000.f, Rock, RockHandle))
 			{
 				UE_LOG(LogTemp, Log, TEXT("[RequireEvaluator] Found Rock!"));
-				if (BuildingSubsystem.FindItem(Location, 8000.f, Tree, TreeHandle))
+				if (BuildingSubsystem.FindItem(Location, 3000.f, Tree, TreeHandle))
 				{
 					UE_LOG(LogTemp, Log, TEXT("[RequireEvaluator] Found Tree"));
 					
@@ -103,7 +106,7 @@ void FRequiredItemsEvaluator::Evaluate(FStateTreeExecutionContext& Context, cons
 
 	if (QueuedResources.Num() > 0 && !Agent.ResouceHandle.IsValid())
 	{
-		UE_LOG(LogTemp, Log, TEXT("[RequireEvaluator] QueuedResource Num:%d"), QueuedResources.Num());
+		//UE_LOG(LogTemp, Log, TEXT("[RequireEvaluator] QueuedResource Num:%d"), QueuedResources.Num());
 
 		FSmartObjectHandle ResourceHandle;
 		bFoundSmartObject = true;
@@ -162,16 +165,17 @@ EStateTreeRunStatus FMoveToEntityTask::EnterState(FStateTreeExecutionContext& Co
 	MoveTarget.CreateNewAction(EMassMovementAction::Move, *Context.GetWorld());
 	MoveTarget.IntentAtGoal = EMassMovementAction::Stand;
 
+	
+	//UE_LOG(LogTemp, Log, TEXT("[RequireEvaluator] CollectImte:MoveToEntityTask Entered:%s"), *Context.GetDebugInfoString());
 	return EStateTreeRunStatus::Running;
 }
 
 
 EStateTreeRunStatus FMoveToEntityTask::Tick(FStateTreeExecutionContext& Context, const float DeltaTime) const
 {
-	UE_LOG(LogTemp, Log, TEXT("[RequiredEvaluator] ******MoveEntityTask*******"));
+	
 	const FMassEntityHandle& ItemHandle = Context.GetInstanceData(EntityHandle);
 	UMassEntitySubsystem& EntitySubsystem = Context.GetExternalData(EntitySubsystemHandle);
-	//39:13
 	const FMassStateTreeExecutionContext& MassContext = static_cast<FMassStateTreeExecutionContext&>(Context);
 	UMassSignalSubsystem& MassSignalSubsystem = Context.GetExternalData(MassSignalSubsystemHandle);
 	UBuildingSubsystem& BuildingSubsystem = Context.GetExternalData(BuildingSubsystemHandle);
@@ -183,10 +187,14 @@ EStateTreeRunStatus FMoveToEntityTask::Tick(FStateTreeExecutionContext& Context,
 	MoveTarget.DistanceToGoal = (MoveTarget.Center - Transform.GetLocation()).Length();
 	MoveTarget.Forward = (MoveTarget.Center - Transform.GetLocation()).GetSafeNormal();
 
+	//到达物品周围，销毁该物品
 	if (MoveTarget.DistanceToGoal <= MoveTarget.SlackRadius + 100.f)
 	{
+		UE_LOG(LogTemp, Log, TEXT("[MoveToEntityTask] 0-ItemHandle:%d "), EntitySubsystem.IsEntityValid(ItemHandle));
 		EntitySubsystem.Defer().DestroyEntity(ItemHandle);
 		BuildingSubsystem.ItemHashGrid.RemovePoint(ItemHandle, MoveTarget.Center);
+		//UE_LOG(LogTemp, Log, TEXT("[MoveToEntityTask] CollectItem:MoveToEntity-> Collect Item Finished:%s "),*ItemHandle.DebugGetDescription());
+		UE_LOG(LogTemp, Log, TEXT("[MoveToEntityTask] 1-ItemHandle:%d "), EntitySubsystem.IsEntityValid(ItemHandle));
 		return EStateTreeRunStatus::Succeeded;
 
 	}
@@ -206,6 +214,8 @@ bool FClaimSmartObjectTask::Link(FStateTreeLinker& Linker)
 
 EStateTreeRunStatus FClaimSmartObjectTask::EnterState(FStateTreeExecutionContext& Context, const EStateTreeStateChangeType ChangeType, const FStateTreeTransitionResult& Transition) const
 {
+
+	
 	const FSmartObjectHandle& SOHandle = Context.GetInstanceData(SmartObjectHandle);
 	EMassSmartObjectClaimResult& ClaimResult = Context.GetInstanceData(ClaimResultHandle);
 
@@ -217,6 +227,7 @@ EStateTreeRunStatus FClaimSmartObjectTask::EnterState(FStateTreeExecutionContext
 
 	FSmartObjectClaimHandle ClaimHandle = SmartObjectSubsystem.Claim(SOHandle, Filter);
 
+	
 	if (!ClaimHandle.IsValid())
 		return EStateTreeRunStatus::Failed;
 
@@ -228,7 +239,7 @@ EStateTreeRunStatus FClaimSmartObjectTask::EnterState(FStateTreeExecutionContext
 	
 	ClaimResult = EMassSmartObjectClaimResult::Succeeded;
 
-
+	UE_LOG(LogTemp, Log, TEXT("[RequiredEvaluator]ClaimSmartObjectTask: Entered!"));
 
 	return EStateTreeRunStatus::Succeeded;
 }
@@ -259,7 +270,7 @@ EStateTreeRunStatus FMoveTargetTask::EnterState(FStateTreeExecutionContext& Cont
 	MoveTarget.DesiredSpeed.Set(MoveParameters.DefaultDesiredSpeed);
 	MoveTarget.CreateNewAction(EMassMovementAction::Move, *Context.GetWorld());
 	MoveTarget.IntentAtGoal = EMassMovementAction::Stand;
-
+	//UE_LOG(LogTemp, Log, TEXT("[RequiredEvaluator]MoveTargetTask: Entered!"));
 	return EStateTreeRunStatus::Running;
 }
 
@@ -272,11 +283,14 @@ EStateTreeRunStatus FMoveTargetTask::Tick(FStateTreeExecutionContext& Context, c
 	FMassMoveTargetFragment& MoveTarget = Context.GetExternalData(MoveTargetHandle);
 	const FTransform& Transform = Context.GetExternalData(TransformHandle).GetTransform();
 
-	MoveTarget.DistanceToGoal = (MoveTarget.Center = Transform.GetLocation()).Length();
+	MoveTarget.DistanceToGoal = (MoveTarget.Center -Transform.GetLocation()).Length();
 	MoveTarget.Forward = (MoveTarget.Center - Transform.GetLocation()).GetSafeNormal();
+
+	//UE_LOG(LogTemp, Log, TEXT("[RequiredEvaluator]MoveTargetTask:Tick MoveTargetDistToGoal: %d"), MoveTarget.DistanceToGoal);
 
 	if (MoveTarget.DistanceToGoal <= MoveTarget.SlackRadius + 100.f)
 	{
+		UE_LOG(LogTemp, Log, TEXT("[RequiredEvaluator]MoveTargetTask Tick Successed!"));
 		return EStateTreeRunStatus::Succeeded;
 	}
 	return EStateTreeRunStatus::Running;

@@ -43,7 +43,7 @@ bool UBuildingSubsystem::CalimFloor(FSmartObjectHandle& OutBuilding)
 bool UBuildingSubsystem::FindItem(const FVector& Location, float Radius, EResourceType ResourceType, FMassEntityHandle& OutItemHandle) const
 {
 	UMassEntitySubsystem* EntitySubsystem = GetWorld()->GetSubsystem<UMassEntitySubsystem>();
-	UE_LOG(LogTemp, Log, TEXT("[BuildingSubsystem] HashGrid Searching Resource:%d"), ResourceType);
+	//UE_LOG(LogTemp, Log, TEXT("[BuildingSubsystem] HashGrid Searching Resource:%d"), ResourceType);
 	const TPair<FMassEntityHandle, float> ItemHandle = ItemHashGrid.FindNearestInRadius(Location, Radius, [this, &Location, &EntitySubsystem](const FMassEntityHandle& Handle)
 		{	
 			

@@ -30,16 +30,17 @@ void UItemInitializerProcessor::Execute(UMassEntitySubsystem& EntitySubsystem, F
 				FItemFragment& Item = ItemFragments[EntityIndex];
 				FTransform& Transform = Transforms[EntityIndex].GetMutableTransform();
 
-				UE_LOG(LogTemp, Log, TEXT("ItemInitializerProcessor->Get Entity Transform.Location:%s"), *Transform.GetLocation().ToString());
+				//UE_LOG(LogTemp, Log, TEXT("ItemInitializerProcessor->Get Entity Transform.Location:%s"), *Transform.GetLocation().ToString());
 				if (Transform.GetLocation() == FVector::Zero())
 				{
 					Item.OldLocation.X += FMath::FRandRange(-100.f, 100.f);
 					Item.OldLocation.Y += FMath::FRandRange(-100.f, 100.f);
 					Transform.SetLocation(Item.OldLocation);
 				}
-
+				
 				BuildingSubsystem->ItemHashGrid.InsertPoint(Context.GetEntity(EntityIndex), Item.OldLocation);
-
+				//UE_LOG(LogTemp, Log, TEXT("ItemInitializerProcessor->Item[%d]=%d Added to HashGrid"),EntityIndex, Item.ItemType.GetValue());
+		
 				Context.Defer().AddTag<FItemAddedToGrid>(Context.GetEntity(EntityIndex));
 			}
 
@@ -75,7 +76,7 @@ void UItemProcessor::Execute(UMassEntitySubsystem& EntitySubsystem, FMassExecuti
 				FItemFragment& Item = ItemFragments[EntityIndex];
 				const FVector& Location = Transforms[EntityIndex].GetTransform().GetLocation();
 
-				UE_LOG(LogTemp, Log, TEXT("ItemProcessor->Get Entity Transform.Location:%s"), *Location.ToString());
+				//UE_LOG(LogTemp, Log, TEXT("ItemProcessor->Get Entity Transform.Location:%s"), *Location.ToString());
 
 				BuildingSubsystem->ItemHashGrid.UpdatePoint(Context.GetEntity(EntityIndex), Item.OldLocation, Location);
 				Item.OldLocation = Location;

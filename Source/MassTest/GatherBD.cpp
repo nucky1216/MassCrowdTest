@@ -17,28 +17,28 @@ void UGatherBD::Activate(FMassCommandBuffer& CommandBuffer, const FMassBehaviorE
 	FAgentFragment& Agent = EntityContext.EntityView.GetFragmentData<FAgentFragment>();
 
 	Agent.ResouceHandle.Reset();
-
-
+	
 }
 
 void UGatherBD::Deactivate(FMassCommandBuffer& CommandBuffer, const FMassBehaviorEntityContext& EntityContext) const
 {
 	Super::Deactivate(CommandBuffer, EntityContext);
-	UE_LOG(LogTemp, Log, TEXT("[GatherBD] Deactivate!"));
+	UE_LOG(LogTemp, Log, TEXT("[GatherBD] Resource SmartObject Deactivate!"));
 	UMassSpawnerSubsystem* SpawnerSubsystem = UWorld::GetSubsystem<UMassSpawnerSubsystem>(EntityContext.SmartObjectSubsystem.GetWorld());
 
 	if (EntityContext.SmartObjectSubsystem.GetWorld() && UGameplayStatics::GetPlayerPawn(EntityContext.SmartObjectSubsystem.GetWorld(), 0))
 	{
 		TArray<FMassEntityHandle> Items;
 		const FMassEntityTemplate* EntityTemplate = ItemConfig->GetConfig().GetOrCreateEntityTemplate(*UGameplayStatics::GetPlayerPawn(EntityContext.SmartObjectSubsystem.GetWorld(), 0), *ItemConfig);
-		SpawnerSubsystem->SpawnEntities(*EntityTemplate, 4, Items);
+		SpawnerSubsystem->SpawnEntities(*EntityTemplate, 1, Items);
+		//UE_LOG(LogTemp, Log, TEXT("Spawn 4 Items"));
 
 		for (const FMassEntityHandle& ItemHandle : Items)
 		{
 			const FVector& SpawnLocation = EntityContext.EntityView.GetFragmentDataPtr<FTransformFragment>()->GetTransform().GetLocation();
 			
 
-			UE_LOG(LogTemp, Log, TEXT("Get SpawnLocation from Context.FragmentDataPtr:(%s)"), *SpawnLocation.ToString());
+			//UE_LOG(LogTemp, Log, TEXT("Get SpawnLocation from Context.FragmentDataPtr:(%s)"), *SpawnLocation.ToString());
 
 			FItemFragment ItemFragment;
 			ItemFragment.ItemType = ResourceType;
@@ -46,14 +46,26 @@ void UGatherBD::Deactivate(FMassCommandBuffer& CommandBuffer, const FMassBehavio
 			CommandBuffer.PushCommand(FCommandAddFragmentInstance(ItemHandle, FConstStructView::Make(ItemFragment)));
 		}
 		const FMassSmartObjectUserFragment& SOUser = EntityContext.EntityView.GetFragmentData<FMassSmartObjectUserFragment>();
+
 		if (USmartObjectComponent* SOComp = EntityContext.SmartObjectSubsystem.GetSmartObjectComponent(SOUser.ClaimHandle))
 		{
+
+			//UE_LOG(LogTemp, Log, TEXT("DeActivated1 SmartObject Registerd:%d"), EntityContext.SmartObjectSubsystem.Register);
+
 			CommandBuffer.PushCommand(FDeferredCommand([SOComp, EntityContext](UMassEntitySubsystem& System)
 				{
 					UE_LOG(LogTemp, Log, TEXT("DeActivated1 SmartObject Registerd:%d"),SOComp->IsRegistered());
-					EntityContext.SmartObjectSubsystem.UnregisterSmartObject(*SOComp);
 					SOComp->GetOwner()->Destroy();
-					UE_LOG(LogTemp, Log, TEXT("DeActivated2 SmartObject Registerd:%d"), SOComp->IsRegistered());
+					/*if (SOComp->IsRegistered())
+					{
+						EntityContext.SmartObjectSubsystem.UnregisterSmartObject(*SOComp);
+						UE_LOG(LogTemp, Log, TEXT("DeActivated2 SmartObject Registerd:%d"), SOComp->IsRegistered());
+					}
+					if(!SOComp->IsRegistered())
+					{
+						SOComp->GetOwner()->Destroy();
+						UE_LOG(LogTemp, Log, TEXT("DeActivated2 Destroyed Owner"));
+					}*/
 				}));
 		}
 
