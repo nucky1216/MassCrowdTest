@@ -36,22 +36,23 @@ void UGatherBD::Deactivate(FMassCommandBuffer& CommandBuffer, const FMassBehavio
 		for (const FMassEntityHandle& ItemHandle : Items)
 		{
 			const FVector& SpawnLocation = EntityContext.EntityView.GetFragmentDataPtr<FTransformFragment>()->GetTransform().GetLocation();
-			
 
-			//UE_LOG(LogTemp, Log, TEXT("Get SpawnLocation from Context.FragmentDataPtr:(%s)"), *SpawnLocation.ToString());
+			// 确保实体包含 FTransformFragment
+			//FTransformFragment TransformFragment;
+			//TransformFragment.GetMutableTransform().SetLocation(FVector::Zero()); // 示例，实际初始化可以根据需要
+			//CommandBuffer.PushCommand(FCommandAddFragmentInstance(ItemHandle, FConstStructView::Make(TransformFragment)));
+			//UE_LOG(LogTemp, Log, TEXT("Push CommandBuffer: Add TransformFragment"));
 
 			FItemFragment ItemFragment;
 			ItemFragment.ItemType = ResourceType;
 			ItemFragment.OldLocation = SpawnLocation;
 			CommandBuffer.PushCommand(FCommandAddFragmentInstance(ItemHandle, FConstStructView::Make(ItemFragment)));
+			UE_LOG(LogTemp, Log, TEXT("Push CommandBuffer: Add ItemFragment"));
 		}
 		const FMassSmartObjectUserFragment& SOUser = EntityContext.EntityView.GetFragmentData<FMassSmartObjectUserFragment>();
 
 		if (USmartObjectComponent* SOComp = EntityContext.SmartObjectSubsystem.GetSmartObjectComponent(SOUser.ClaimHandle))
 		{
-
-			//UE_LOG(LogTemp, Log, TEXT("DeActivated1 SmartObject Registerd:%d"), EntityContext.SmartObjectSubsystem.Register);
-
 			CommandBuffer.PushCommand(FDeferredCommand([SOComp, EntityContext](UMassEntitySubsystem& System)
 				{
 					UE_LOG(LogTemp, Log, TEXT("DeActivated1 SmartObject Registerd:%d"),SOComp->IsRegistered());
@@ -67,6 +68,7 @@ void UGatherBD::Deactivate(FMassCommandBuffer& CommandBuffer, const FMassBehavio
 						UE_LOG(LogTemp, Log, TEXT("DeActivated2 Destroyed Owner"));
 					}*/
 				}));
+			UE_LOG(LogTemp, Log, TEXT("Push CommandBuffer: Destroy Actor"));
 		}
 
 	}	

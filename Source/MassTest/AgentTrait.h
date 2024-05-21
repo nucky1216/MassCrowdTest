@@ -81,16 +81,15 @@ struct MASSTEST_API FAgent : public FMassTag
 
 
 
-//UCLASS()
-//class MASSTEST_API UAgentTestProcessor : public UMassProcessor
-//{
-//	GENERATED_BODY()
-//public:
-//	UAgentTestProcessor();
-//	virtual void Execute(UMassEntitySubsystem& EntitySubsystem, FMassExecutionContext& Context) override;
-//	virtual void ConfigureQueries() override;
-//	virtual void Initialize(UObject& Owner) override;
-//
-//protected:
-//	FMassEntityQuery EntityQuery;
-//};
+UCLASS()
+class MASSTEST_API UAgentTestProcessor : public UMassProcessor
+{
+	GENERATED_BODY()
+public:
+	UAgentTestProcessor();
+	virtual void Execute(UMassEntitySubsystem& EntitySubsystem, FMassExecutionContext& Context) override;
+	virtual void ConfigureQueries() override;
+
+protected:
+	FMassEntityQuery EntityQuery;
+};

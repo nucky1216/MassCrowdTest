@@ -49,32 +49,32 @@ void UAgentInitializer::ConfigureQueries()
 	EntityQuery.AddRequirement<FMassRepresentationFragment>(EMassFragmentAccess::ReadWrite);
 }
 
-//UAgentTestProcessor::UAgentTestProcessor()
-//{
-//	//bAutoRegisterWithProcessingPhases = true;
-//	//ExecutionOrder.ExecuteInGroup = UE::Mass::ProcessorGroupNames::PrePhysics;
-//}
-//
-//void UAgentTestProcessor::Execute(UMassEntitySubsystem& EntitySubsystem, FMassExecutionContext& Context)
-//{
-//	const float DeltaTime = FMath::Min(0.1f, Context.GetDeltaTimeSeconds());
-//	
-//	EntityQuery.ForEachEntityChunk(EntitySubsystem, Context, [DeltaTime](FMassExecutionContext& Context)
-//		{
-//			const TArrayView<FTransformFragment> LocationList = Context.GetMutableFragmentView<FTransformFragment>();
-//			
-//			for (int i = 0; i < Context.GetNumEntities(); ++i)
-//			{
-//				UE_LOG(LogTemp, Log, TEXT("Search Entity%d"),i);
-//			}
-//		});
-//}
-//
-//void UAgentTestProcessor::ConfigureQueries()
-//{
-//	EntityQuery.AddRequirement<FAgentFragment>(EMassFragmentAccess::ReadWrite);
-//	//EntityQuery.AddRequirement<FTransformFragment>(EMassFragmentAccess::ReadWrite);
-//	EntityQuery.AddConstSharedRequirement<FAgentParameters>(EMassFragmentPresence::All);
-//	EntityQuery.AddTagRequirement<FAgent>(EMassFragmentPresence::All);
-//	EntityQuery.AddRequirement<FMassRepresentationFragment>(EMassFragmentAccess::ReadWrite);
-//}
+UAgentTestProcessor::UAgentTestProcessor()
+{
+	bAutoRegisterWithProcessingPhases = true;
+	//ExecutionOrder.ExecuteInGroup = UE::Mass::ProcessorGroupNames::PrePhysics;
+	UE_LOG(LogTemp, Log, TEXT("Test Processor Construct!"));
+}
+
+void UAgentTestProcessor::Execute(UMassEntitySubsystem& EntitySubsystem, FMassExecutionContext& Context)
+{
+	const float DeltaTime = FMath::Min(0.1f, Context.GetDeltaTimeSeconds());
+	
+	EntityQuery.ForEachEntityChunk(EntitySubsystem, Context, [DeltaTime](FMassExecutionContext& Context)
+		{
+			const TArrayView<FTransformFragment> LocationList = Context.GetMutableFragmentView<FTransformFragment>();
+			
+			for (int i = 0; i < Context.GetNumEntities(); ++i)
+			{
+				UE_LOG(LogTemp, Log, TEXT("Search Entity%d"),i);
+			}
+		});
+}
+
+void UAgentTestProcessor::ConfigureQueries()
+{
+	EntityQuery.AddRequirement<FAgentFragment>(EMassFragmentAccess::ReadWrite);
+	//EntityQuery.AddRequirement<FTransformFragment>(EMassFragmentAccess::ReadWrite);
+	//EntityQuery.AddConstSharedRequirement<FAgentParameters>(EMassFragmentPresence::All);
+	EntityQuery.AddTagRequirement<FAgent>(EMassFragmentPresence::All);
+}
