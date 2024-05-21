@@ -30,7 +30,7 @@ void UGatherBD::Deactivate(FMassCommandBuffer& CommandBuffer, const FMassBehavio
 	{
 		TArray<FMassEntityHandle> Items;
 		const FMassEntityTemplate* EntityTemplate = ItemConfig->GetConfig().GetOrCreateEntityTemplate(*UGameplayStatics::GetPlayerPawn(EntityContext.SmartObjectSubsystem.GetWorld(), 0), *ItemConfig);
-		SpawnerSubsystem->SpawnEntities(*EntityTemplate, 1, Items);
+		SpawnerSubsystem->SpawnEntities(*EntityTemplate, 4, Items);
 		//UE_LOG(LogTemp, Log, TEXT("Spawn 4 Items"));
 
 		for (const FMassEntityHandle& ItemHandle : Items)

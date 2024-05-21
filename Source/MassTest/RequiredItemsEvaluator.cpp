@@ -59,7 +59,7 @@ void FRequiredItemsEvaluator::Evaluate(FStateTreeExecutionContext& Context, cons
 			return;
 		}
 	}
-	//Agent是否在等待命令
+	//未获取任何资源的Agent是否在等待命令
 	if (Agent.QueuedItems.Num() <= 0 && !Agent.BuildingHandle.IsValid())
 	{
 		if (BuildingSubsystem.GetQueuedBuidlings() > 0)
@@ -92,7 +92,7 @@ void FRequiredItemsEvaluator::Evaluate(FStateTreeExecutionContext& Context, cons
 			}
 		}
 	}
-	//UE_LOG(LogTemp, Log, TEXT("[RequireEvaluator] Agent.QueuedItems.Num:%d"), Agent.QueuedItems.Num());
+	//建筑物有效，并且已采集到所需的资源，智能对象句柄设为建筑物的SO句柄
 	if (Agent.BuildingHandle.IsValid() && Agent.QueuedItems.Num() == 0)
 	{
 		bFoundSmartObject = true;
