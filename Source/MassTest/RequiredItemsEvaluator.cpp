@@ -270,7 +270,7 @@ EStateTreeRunStatus FMoveTargetTask::EnterState(FStateTreeExecutionContext& Cont
 	MoveTarget.DesiredSpeed.Set(MoveParameters.DefaultDesiredSpeed);
 	MoveTarget.CreateNewAction(EMassMovementAction::Move, *Context.GetWorld());
 	MoveTarget.IntentAtGoal = EMassMovementAction::Stand;
-	//UE_LOG(LogTemp, Log, TEXT("[RequiredEvaluator]MoveTargetTask: Entered!"));
+	UE_LOG(LogTemp, Log, TEXT("[MoveTargetTask]EnterState: Move.Center:%s DistToGoal:%f"), *MoveTarget.Center.ToString(), MoveTarget.DistanceToGoal);
 	return EStateTreeRunStatus::Running;
 }
 
@@ -286,8 +286,8 @@ EStateTreeRunStatus FMoveTargetTask::Tick(FStateTreeExecutionContext& Context, c
 	MoveTarget.DistanceToGoal = (MoveTarget.Center -Transform.GetLocation()).Length();
 	MoveTarget.Forward = (MoveTarget.Center - Transform.GetLocation()).GetSafeNormal();
 
-	//UE_LOG(LogTemp, Log, TEXT("[RequiredEvaluator]MoveTargetTask:Tick MoveTargetDistToGoal: %d"), MoveTarget.DistanceToGoal);
-
+	UE_LOG(LogTemp, Log, TEXT("[MoveTargetTask]Tick: Move.Center:%s DistToGoal:%f"),*MoveTarget.Center.ToString(),MoveTarget.DistanceToGoal);
+	
 	if (MoveTarget.DistanceToGoal <= MoveTarget.SlackRadius + 100.f)
 	{
 		UE_LOG(LogTemp, Log, TEXT("[RequiredEvaluator]MoveTargetTask Tick Successed!"));

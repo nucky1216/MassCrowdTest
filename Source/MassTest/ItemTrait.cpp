@@ -13,8 +13,8 @@ void UItemTrait::BuildTemplate(FMassEntityTemplateBuildContext& BuildContext, UW
 
 UItemInitializerProcessor::UItemInitializerProcessor()
 {
-	bAutoRegisterWithProcessingPhases = true;
-	ObservedType = FTransformFragment::StaticStruct();
+	//bAutoRegisterWithProcessingPhases = true;
+	ObservedType = FItemFragment::StaticStruct();
 	Operation = EMassObservedOperation::Add;
 }
 
@@ -22,27 +22,27 @@ void UItemInitializerProcessor::Execute(UMassEntitySubsystem& EntitySubsystem, F
 {
 	EntityQuery.ForEachEntityChunk(EntitySubsystem, Context, [this](FMassExecutionContext& Context)
 		{
-			//TArrayView<FTransformFragment> Transforms = Context.GetMutableFragmentView<FTransformFragment>();
-			//TArrayView<FItemFragment> ItemFragments = Context.GetMutableFragmentView<FItemFragment>();
+			TArrayView<FTransformFragment> Transforms = Context.GetMutableFragmentView<FTransformFragment>();
+			TArrayView<FItemFragment> ItemFragments = Context.GetMutableFragmentView<FItemFragment>();
 			UE_LOG(LogTemp, Log, TEXT("ItemInitializerProcessor Running"));
-			//for (int32 EntityIndex = 0; EntityIndex < Context.GetNumEntities(); ++EntityIndex)
-			//{
-			//	FItemFragment& Item = ItemFragments[EntityIndex];
-			//	FTransform& Transform = Transforms[EntityIndex].GetMutableTransform();
+			for (int32 EntityIndex = 0; EntityIndex < Context.GetNumEntities(); ++EntityIndex)
+			{
+				FItemFragment& Item = ItemFragments[EntityIndex];
+				FTransform& Transform = Transforms[EntityIndex].GetMutableTransform();
 
-			//	//UE_LOG(LogTemp, Log, TEXT("ItemInitializerProcessor->Get Entity Transform.Location:%s"), *Transform.GetLocation().ToString());
-			//	if (Transform.GetLocation() == FVector::Zero())
-			//	{
-			//		Item.OldLocation.X += FMath::FRandRange(-100.f, 100.f);
-			//		Item.OldLocation.Y += FMath::FRandRange(-100.f, 100.f);
-			//		Transform.SetLocation(Item.OldLocation);
-			//	}
-			//	
-			//	BuildingSubsystem->ItemHashGrid.InsertPoint(Context.GetEntity(EntityIndex), Item.OldLocation);
-			//	UE_LOG(LogTemp, Log, TEXT("ItemInitializerProcessor->Item[%d]=%d Added to HashGrid"),EntityIndex, Item.ItemType.GetValue());
+				//UE_LOG(LogTemp, Log, TEXT("ItemInitializerProcessor->Get Entity Transform.Location:%s"), *Transform.GetLocation().ToString());
+				if (Transform.GetLocation() == FVector::Zero())
+				{
+					Item.OldLocation.X += FMath::FRandRange(-100.f, 100.f);
+					Item.OldLocation.Y += FMath::FRandRange(-100.f, 100.f);
+					Transform.SetLocation(Item.OldLocation);
+				}
+				
+				BuildingSubsystem->ItemHashGrid.InsertPoint(Context.GetEntity(EntityIndex), Item.OldLocation);
+				UE_LOG(LogTemp, Log, TEXT("ItemInitializerProcessor->Item[%d]=%d Added to HashGrid"),EntityIndex, Item.ItemType.GetValue());
 		
-			//	Context.Defer().AddTag<FItemAddedToGrid>(Context.GetEntity(EntityIndex));
-			//}
+				Context.Defer().AddTag<FItemAddedToGrid>(Context.GetEntity(EntityIndex));
+			}
 
 		});
 }
@@ -50,12 +50,14 @@ void UItemInitializerProcessor::Execute(UMassEntitySubsystem& EntitySubsystem, F
 void UItemInitializerProcessor::ConfigureQueries()
 {
 	EntityQuery.AddRequirement<FItemFragment>(EMassFragmentAccess::ReadWrite);
-	//EntityQuery.AddRequirement<FTransformFragment>(EMassFragmentAccess::ReadWrite);
+	EntityQuery.AddRequirement<FTransformFragment>(EMassFragmentAccess::ReadWrite);
 	EntityQuery.AddRequirement<FMassRepresentationFragment>(EMassFragmentAccess::ReadWrite);
 	EntityQuery.AddRequirement<FMassRepresentationLODFragment>(EMassFragmentAccess::ReadOnly);
 	//EntityQuery.AddTagRequirement<FItemAddedToGrid>(EMassFragmentPresence::None);
 }
 
+
+//更新Item的位置。应该不需要更新？
 void UItemInitializerProcessor::Initialize(UObject& Owner)
 {
 	BuildingSubsystem = UWorld::GetSubsystem<UBuildingSubsystem>(Owner.GetWorld());
@@ -77,7 +79,7 @@ void UItemProcessor::Execute(UMassEntitySubsystem& EntitySubsystem, FMassExecuti
 				FItemFragment& Item = ItemFragments[EntityIndex];
 				const FVector& Location = Transforms[EntityIndex].GetTransform().GetLocation();
 
-				//UE_LOG(LogTemp, Log, TEXT("ItemProcessor->Get Entity Transform.Location:%s"), *Location.ToString());
+				UE_LOG(LogTemp, Log, TEXT("ItemProcessor->Get Entity Transform.Location:%s"), *Location.ToString());
 
 				BuildingSubsystem->ItemHashGrid.UpdatePoint(Context.GetEntity(EntityIndex), Item.OldLocation, Location);
 				Item.OldLocation = Location;
@@ -91,6 +93,7 @@ void UItemProcessor::ConfigureQueries()
 	EntityQuery.AddRequirement<FItemFragment>(EMassFragmentAccess::ReadWrite);
 	EntityQuery.AddTagRequirement<FItemAddedToGrid>(EMassFragmentPresence::All);
 	EntityQuery.AddRequirement<FTransformFragment>(EMassFragmentAccess::ReadOnly);
+	EntityQuery.AddTagRequirement<FItemAddedToGrid>(EMassFragmentPresence::None);
 }
 
 void UItemProcessor::Initialize(UObject& Owner)

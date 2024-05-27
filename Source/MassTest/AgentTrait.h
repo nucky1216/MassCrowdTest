@@ -7,8 +7,15 @@
 #include "MassEntityTypes.h"
 #include "SmartObjectTypes.h"
 #include "MassObserverProcessor.h"
-//#include "BuildingSubsystem.h"
+#include "MassSignalSubsystem.h"
+#include "NavigationSystem.h"
 #include "AgentTrait.generated.h"
+
+
+
+
+
+struct FMassMovementParameters;
 
 class UBuildingSubsystem;
 
@@ -33,6 +40,12 @@ struct MASSTEST_API FAgentFragment :public FMassFragment
 		FSmartObjectHandle ResouceHandle;
 	UPROPERTY()//ŒÔ∆∑
 		TArray<FMassEntityHandle> QueuedItems;
+
+	UPROPERTY()
+		TArray<FVector> PathPoints;
+	
+	UPROPERTY()
+		int32 PathIdx = -1;
 };
 
 USTRUCT()
@@ -71,10 +84,17 @@ class MASSTEST_API UAgentInitializer :public UMassObserverProcessor
 	TObjectPtr<USmartObjectSubsystem> SmartObjectSubsystem;
 
 	FMassEntityQuery EntityQuery;
+	UNavigationSystemV1* NavSys ;
 };
 
 USTRUCT()
 struct MASSTEST_API FAgent : public FMassTag
+{
+	GENERATED_BODY()
+};
+
+USTRUCT()
+struct MASSTEST_API FTrigger : public FMassTag
 {
 	GENERATED_BODY()
 };
@@ -89,7 +109,9 @@ public:
 	UAgentTestProcessor();
 	virtual void Execute(UMassEntitySubsystem& EntitySubsystem, FMassExecutionContext& Context) override;
 	virtual void ConfigureQueries() override;
+	virtual void Initialize(UObject& Owner) override;
 
 protected:
 	FMassEntityQuery EntityQuery;
+	UMassSignalSubsystem* SignalSubsystem;
 };
